@@ -6,11 +6,59 @@ let previousInput = '';
 let resultDisplayed = false;
 let history = []; // Array to store calculation history
 
+// Function to update history display
+function updateHistory() {
+    const historyDiv = document.getElementById('history');
+    historyDiv.innerHTML = history.join('<br>');
+}
+
+// Function to clear history
+function clearHistory() {
+    history = [];
+    updateHistory();
+}
+
+// Add event listener to the "Clear History" button
+document.getElementById('clear-history').addEventListener('click', clearHistory);
+
+// Handle the equals operation and store the calculation in history
+function handleEquals() {
+    if (currentNumber === '') return;
+    
+    let result;
+    switch (operator) {
+        case '+':
+            result = parseFloat(previousNumber) + parseFloat(currentNumber);
+            break;
+        case '-':
+            result = parseFloat(previousNumber) - parseFloat(currentNumber);
+            break;
+        case '*':
+            result = parseFloat(previousNumber) * parseFloat(currentNumber);
+            break;
+        case '/':
+            result = parseFloat(previousNumber) / parseFloat(currentNumber);
+            break;
+        default:
+            return;
+    }
+
+    display.innerText = result;
+    history.push(`${previousNumber} ${operator} ${currentNumber} = ${result}`);
+    updateHistory(); // Update the history display
+    
+    previousNumber = result.toString();
+    currentNumber = '';
+    operator = '';
+}
+
+
+
 // Toggle light/dark theme
 const themeToggle = document.getElementById('toggle-theme');
 themeToggle.addEventListener('click', () => {
     document.body.classList.toggle('dark-mode');
-    themeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+    themeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light' : 'Dark';
 });
 
 // Clear input
