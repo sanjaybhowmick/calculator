@@ -5,6 +5,7 @@ let operator = '';
 let previousInput = '';
 let resultDisplayed = false;
 let history = []; // Array to store calculation history
+let isNegative = false; // To track negative number entry
 
 // Function to update history display
 function updateHistory() {
@@ -23,36 +24,17 @@ document.getElementById('clear-history').addEventListener('click', clearHistory)
 
 // Handle the equals operation and store the calculation in history
 function handleEquals() {
-    if (currentNumber === '') return;
-    
-    let result;
-    switch (operator) {
-        case '+':
-            result = parseFloat(previousNumber) + parseFloat(currentNumber);
-            break;
-        case '-':
-            result = parseFloat(previousNumber) - parseFloat(currentNumber);
-            break;
-        case '*':
-            result = parseFloat(previousNumber) * parseFloat(currentNumber);
-            break;
-        case '/':
-            result = parseFloat(previousNumber) / parseFloat(currentNumber);
-            break;
-        default:
-            return;
-    }
+    if (previousInput === '' || currentInput === '') return; // Prevent execution if no valid input
 
-    display.innerText = result;
-    history.push(`${previousNumber} ${operator} ${currentNumber} = ${result}`);
-    updateHistory(); // Update the history display
-    
-    previousNumber = result.toString();
-    currentNumber = '';
+    const result = calculate(previousInput, currentInput, operator);
+    saveToHistory(previousInput, currentInput, operator, result);
+
+    previousInput = result.toString();
+    display.value = previousInput;
+    currentInput = '';
     operator = '';
+    resultDisplayed = true; // Set result flag to true to indicate a result was just displayed
 }
-
-
 
 // Toggle light/dark theme
 const themeToggle = document.getElementById('toggle-theme');
@@ -67,6 +49,8 @@ document.getElementById('clear').addEventListener('click', () => {
     operator = '';
     previousInput = '';
     display.value = '';
+    resultDisplayed = false;
+    isNegative = false;
 });
 
 // Backspace
@@ -93,7 +77,7 @@ document.querySelectorAll('.btn').forEach(button => {
 function handleNumber(value) {
     if (resultDisplayed) {
         currentInput = value;
-        resultDisplayed = false;
+        resultDisplayed = false; // Reset the result flag to allow new inputs
     } else {
         currentInput += value;
     }
@@ -101,9 +85,26 @@ function handleNumber(value) {
 }
 
 function handleOperator(op) {
+    if (resultDisplayed) {
+        // If an operator is pressed after displaying a result, continue from that result
+        resultDisplayed = false; // Reset the result flag
+        operator = op;
+        return;
+    }
+
+    if (currentInput === '' && op === '-' && !operator) {
+        // Start entering a negative number for the first input
+        currentInput = '-';
+        display.value = currentInput;
+        return;
+    }
+
     if (currentInput === '') {
-        if (previousInput !== '' && resultDisplayed) {
-            operator = op; // Allow chaining of operations even after result
+        // If there's no input but an operator exists, treat minus as a negative number
+        if (op === '-' && operator) {
+            currentInput = '-';
+            display.value = currentInput;
+            return;
         }
         return;
     }
@@ -117,20 +118,6 @@ function handleOperator(op) {
     operator = op;
     currentInput = '';
     resultDisplayed = false; // Reset result flag
-}
-
-function handleEquals() {
-    if (previousInput === '' || currentInput === '') return;
-
-    const result = calculate(previousInput, currentInput, operator);
-    // Save the calculation to history
-    saveToHistory(previousInput, currentInput, operator, result);
-
-    previousInput = result;
-    display.value = previousInput;
-    currentInput = '';
-    operator = '';
-    resultDisplayed = true; // Set result flag to true
 }
 
 function calculate(num1, num2, op) {
@@ -195,4 +182,3 @@ window.addEventListener('keydown', (e) => {
         document.getElementById('clear').click();
     }
 });
-
